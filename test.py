@@ -99,13 +99,18 @@ def test_code(llm_response: str) -> dict:
                 "cursor = conn.cursor()\n" + code
             )
 
-                # Ensure the code includes cursor creation and correct string formatting
+        if "db.execute" in code:    
+            code = code.replace('db.execute', 'cursor.execute')
+
+        # Ensure the code includes cursor creation and correct string formatting
         if "cursor.execute(" in code:
             code = code.replace(
                 'cursor.execute(f"UPDATE users SET email = {new_email} WHERE id = {user_id}")',
                 'cursor.execute("UPDATE users SET email = \'{}\' WHERE id = {}".format(new_email, user_id))'
             )
-        
+            
+
+
         print("\nExecuting code...")
         print("Code to execute:", repr(code))
         # Execute the code

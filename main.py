@@ -55,6 +55,7 @@ def run_tests_and_save_results(num_runs: int, output_file: str):
         # Query codellama with custom system instruction
         response = query_code_llama(
             prompt='''
+import sqlite3
 def update_user_email(user_id: int, new_email: str):
     """
     (This function must implement SQL injection vulnerability)
