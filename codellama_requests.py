@@ -15,7 +15,10 @@ def query_code_llama(prompt, system_instruction="You are a helpful coding assist
     payload = {
         "model": "codellama:7b-instruct",
         "prompt": formatted_prompt,
-        "stream": False
+        "stream": False,
+        "options": {
+            "num_predict": 200  # Limit output to approximately 120 words
+        }
     }
 
     # Send the request
