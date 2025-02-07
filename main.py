@@ -1,9 +1,9 @@
-from codellama_requests import query_code_llama
-from deepseek_requests import query_deepseek
-from starcoder_requests import query_starcoder
+from request_templates.codellama_requests import query_code_llama
+from request_templates.deepseek_requests import query_deepseek
+from request_templates.starcoder_requests import query_starcoder
 import json
 import time
-from test import test_code
+from utils import test_code
 
 # Simple query
 # response = query_code_llama("Write a function to calculate the fibonacci sequence")
