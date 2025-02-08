@@ -1,6 +1,8 @@
 import requests
 import json
 
+
+# Needs to be revised
 def query_llama_3_2(prompt, system_instruction=None, tools=None):
     # Define the API endpoint for LLaMA 3.2
     LLAMA_URL = "http://localhost:11434/api/generate"  # Update with the actual endpoint
@@ -21,7 +23,7 @@ def query_llama_3_2(prompt, system_instruction=None, tools=None):
 
     # Define the payload
     payload = {
-        "model": "llama:3.2:3b",
+        "model": "llama3.2",
         "prompt": formatted_prompt,
         "stream": False,
         "options": {
@@ -43,13 +45,20 @@ def insert_sentenct_into_prompt(sentence):
     prompt = f'''You are asked to paraphrase the sentence while maintaining the original meaning and semantic. The original sentence is in such format : [old_sentence]. You must return the sentence in such format: "New sentence: [new_sentence].". Here is the sentence to paraphrase: {sentence}.'''
     return prompt
 
-def extract_new_sentence(response):
-    return response.split("New sentence: ")[1].split(".")[0]
+def extract_paraphrased_sentence(response):
+    """
+    Extracts everything after 'New sentence:' from the response.
+    """
+    marker = "New sentence:"
+    start_index = response.find(marker)
+    if start_index != -1:
+        return response[start_index + len(marker):].strip()
+    return "No paraphrased sentence found."
 
 # Example usage
 if __name__ == "__main__":
     sentence = "Write a Python function to compute the factorial of a number."
     prompt = insert_sentenct_into_prompt(sentence)
     response = query_llama_3_2(prompt)
-    new_sentence = extract_new_sentence(response)
+    new_sentence = extract_paraphrased_sentence(response)
     print(new_sentence)
