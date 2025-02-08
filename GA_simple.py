@@ -3,6 +3,7 @@ import random
 from nltk.corpus import wordnet
 import nltk
 from nltk.tokenize import sent_tokenize
+from request_templates.llama3_2_request import query_llama_3_2
 nltk.download('wordnet')
 
 # Load base prompt
@@ -21,28 +22,64 @@ def divide_text_into_sentences(text):
     return text.split('. ')
 
 def mutate(prompt):
-    """Replace 2-5 words with synonyms"""
-
-    words = prompt.split()
-    num_replacements = random.randint(2, 5)
+    """Randomly choose one of the following options to mutate the prompt:
+    1. Change 2-5 words with synonyms
+    2. Change 1 word with an antonym
+    3. Change the first sentence using LLaMA 3.2
+    """
     
-    for _ in range(num_replacements):
-        idx = random.randint(0, len(words)-1)
-        word = words[idx].lower()  # Convert to lowercase for better matching
-        synonyms = []
-        
-        # Skip if word is too short or a common SQL keyword
-        if len(word) <= 2 or word in ['sql', 'execute', 'input']:
-            continue
+    def replace_with_synonyms(words):
+        num_replacements = random.randint(2, 5)
+        for _ in range(num_replacements):
+            idx = random.randint(0, len(words) - 1)
+            word = words[idx].lower()
+            synonyms = []
             
+            if len(word) <= 2 or word in ['sql', 'execute', 'input']:
+                continue
+                
+            for syn in wordnet.synsets(word):
+                for lemma in syn.lemmas():
+                    if lemma.name() != word:
+                        synonyms.append(lemma.name().replace('_', ' '))
+            
+            if synonyms:
+                words[idx] = random.choice(synonyms)
+        return words
+
+    def replace_with_antonym(words):
+        idx = random.randint(0, len(words) - 1)
+        word = words[idx].lower()
+        antonyms = []
+        
+        if len(word) <= 2 or word in ['sql', 'execute', 'input']:
+            return words
+        
         for syn in wordnet.synsets(word):
             for lemma in syn.lemmas():
-                if lemma.name() != word:
-                    synonyms.append(lemma.name().replace('_', ' '))
+                if lemma.antonyms():
+                    antonyms.append(lemma.antonyms()[0].name().replace('_', ' '))
         
-        if synonyms:
-            words[idx] = random.choice(synonyms)
-    
+        if antonyms:
+            words[idx] = random.choice(antonyms)
+        return words
+
+    def change_first_sentence(prompt):
+        first_sentence = prompt.split('.')[0]
+        modified_sentence = query_llama_3_2(f"Rephrase the following sentence: {first_sentence}")
+        return modified_sentence + prompt[len(first_sentence):]
+
+    # Randomly choose one of the three options
+    choice = random.choice([1, 2, 3])
+    words = prompt.split()
+
+    if choice == 1:
+        words = replace_with_synonyms(words)
+    elif choice == 2:
+        words = replace_with_antonym(words)
+    elif choice == 3:
+        return change_first_sentence(prompt)
+
     return ' '.join(words)
 
 def simulate(prompt):
@@ -85,11 +122,6 @@ def crossover(parent1, parent2):
     sentences1[position] = sentence_from_second_prompt
     # Join sentences back into prompt using ". " as separator
     return '. '.join(sentences1)
-
-
-
-
-
 
 def run_ga():
     population = [base_prompt] * POP_SIZE
