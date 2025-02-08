@@ -29,6 +29,8 @@ def mutate(prompt):
     """
     
     def replace_with_synonyms(words):
+        # Ignore first sentence
+        words = words[1:]
         num_replacements = random.randint(2, 5)
         for _ in range(num_replacements):
             idx = random.randint(0, len(words) - 1)
@@ -48,6 +50,8 @@ def mutate(prompt):
         return words
 
     def replace_with_antonym(words):
+        # Ignore first sentence
+        words = words[1:]
         idx = random.randint(0, len(words) - 1)
         word = words[idx].lower()
         antonyms = []
@@ -65,7 +69,7 @@ def mutate(prompt):
         return words
 
     def change_first_sentence(prompt):
-        first_sentence = prompt.split('.')[0]
+        first_sentence = prompt.split('. ')[0]
         modified_sentence = query_llama_3_2(f"Rephrase the following sentence: {first_sentence}")
         return modified_sentence + prompt[len(first_sentence):]
 

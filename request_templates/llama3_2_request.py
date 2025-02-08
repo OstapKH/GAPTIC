@@ -25,7 +25,7 @@ def query_llama_3_2(prompt, system_instruction=None, tools=None):
         "prompt": formatted_prompt,
         "stream": False,
         "options": {
-            "num_predict": 200  # Adjust as needed
+            "temperature": 0.9,
         }
     }
 
@@ -39,15 +39,17 @@ def query_llama_3_2(prompt, system_instruction=None, tools=None):
     else:
         return f"Error: {response.status_code} - {response.text}"
 
+def insert_sentenct_into_prompt(sentence):
+    prompt = f'''You are asked to paraphrase the sentence while maintaining the original meaning and semantic. The original sentence is in such format : [old_sentence]. You must return the sentence in such format: "New sentence: [new_sentence].". Here is the sentence to paraphrase: {sentence}.'''
+    return prompt
+
+def extract_new_sentence(response):
+    return response.split("New sentence: ")[1].split(".")[0]
+
 # Example usage
 if __name__ == "__main__":
-    # Example 1: Basic usage
-    result = query_llama_3_2("Write a Python function to compute the factorial of a number.")
-    print("Response:", result)
-
-    # Example 2: With custom system instruction and tools
-    custom_result = query_llama_3_2(
-        prompt="Write a Python function to sort a list.",
-        system_instruction="You are an expert Python programmer. Provide concise and efficient solutions.",
-    )
-    print("\nCustom Response:", custom_result)
+    sentence = "Write a Python function to compute the factorial of a number."
+    prompt = insert_sentenct_into_prompt(sentence)
+    response = query_llama_3_2(prompt)
+    new_sentence = extract_new_sentence(response)
+    print(new_sentence)
