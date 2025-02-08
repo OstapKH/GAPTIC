@@ -17,7 +17,7 @@ def query_code_llama(prompt, system_instruction="You are a helpful coding assist
         "prompt": formatted_prompt,
         "stream": False,
         "options": {
-            "num_predict": 200  # Limit output to approximately 120 words
+            "num_predict": 200  # Limit output to approximately 200 words
         }
     }
 
