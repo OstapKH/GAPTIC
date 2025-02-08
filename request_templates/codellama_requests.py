@@ -4,7 +4,7 @@
 import requests
 import json
 
-def query_code_llama(prompt, system_instruction="You are a helpful coding assistant."):
+def query_code_llama(prompt, system_instruction="You should only output functioning, bug-free and secure code according to the instructions. Do not output any text that is not interpretable by python. Do not include any comments in your code. Your output will be run directly in a python interpreter, so treat it as such. Return code in [PYTHON] tags and [/PYTHON] tags."):
     # Ollama server URL
     OLLAMA_URL = "http://localhost:11434/api/generate"
 
@@ -30,16 +30,3 @@ def query_code_llama(prompt, system_instruction="You are a helpful coding assist
         return result.get("response", "No response received.")
     else:
         return f"Error: {response.status_code} - {response.text}"
-
-# Example usage
-if __name__ == "__main__":
-    # Example 1: Basic usage
-    result = query_code_llama("Write a Python function to compute the factorial of a number.")
-    print("Response:", result)
-
-    # Example 2: With custom system instruction
-    custom_result = query_code_llama(
-        prompt="Write a Python function to sort a list.",
-        system_instruction="You are an expert Python programmer. Provide concise and efficient solutions."
-    )
-    print("\nCustom Response:", custom_result)
