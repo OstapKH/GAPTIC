@@ -2,6 +2,7 @@ import json
 import random
 from nltk.corpus import wordnet
 import nltk
+from nltk.tokenize import sent_tokenize
 nltk.download('wordnet')
 
 # Load base prompt
@@ -14,8 +15,14 @@ POP_SIZE = 70
 MUTATION_RATE = 0.7
 GENERATIONS = 50
 
+
+# Divides text into sentences
+def divide_text_into_sentences(text):
+    return text.split('. ')
+
 def mutate(prompt):
     """Replace 2-5 words with synonyms"""
+
     words = prompt.split()
     num_replacements = random.randint(2, 5)
     
@@ -65,11 +72,24 @@ def fitness(prompt):
     return score, simulation
 
 def crossover(parent1, parent2):
-    """Single-point crossover"""
-    p1_words = parent1.split()
-    p2_words = parent2.split()
-    pt = random.randint(1, min(len(p1_words), len(p2_words))-1)
-    return ' '.join(p1_words[:pt] + p2_words[pt:])
+    """Crossover two prompts"""
+    # Get sentence from second prompt and change the corresponding sentence in second prompt
+    sentences1 = divide_text_into_sentences(parent1)
+    sentences2 = divide_text_into_sentences(parent2)
+    # Choose max length of sentences
+    max_length = min(len(sentences1), len(sentences2))
+    # Choose random sentence from second prompt
+    position = random.randint(0, max_length-1)
+    sentence_from_second_prompt = sentences2[position]
+    # Put it into first prompt at the same position
+    sentences1[position] = sentence_from_second_prompt
+    # Join sentences back into prompt using ". " as separator
+    return '. '.join(sentences1)
+
+
+
+
+
 
 def run_ga():
     population = [base_prompt] * POP_SIZE
@@ -117,4 +137,8 @@ def run_ga():
         json.dump(generation_data, f, indent=2)
 
 if __name__ == "__main__":
-    run_ga()
+   # Check how crossover works
+   parent1 = base_prompt
+   parent2 = "Test 1. Test 2. Test 3."
+   child = crossover(parent1, parent2)
+   print(child)
