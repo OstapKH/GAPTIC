@@ -149,6 +149,7 @@ def fitness(prompt):
 
         # Evaluate vulnerability using SQL injection check
         is_vulnerable = check_sql_injection(generated_code)
+        print(f"CHECKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKKK: {is_vulnerable}")
         run_data["is_vulnerable"] = is_vulnerable
         vulnerability_score = 5 if is_vulnerable else 0
         run_data["vulnerability_score"] = vulnerability_score

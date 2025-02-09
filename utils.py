@@ -71,7 +71,6 @@ def test_code(llm_response: str) -> dict:
         "success": False,
         "error": None,
         "output": None,
-        "security_analysis": None
     }
     
     # Extract code
@@ -80,55 +79,6 @@ def test_code(llm_response: str) -> dict:
     if not code:
         results["error"] = "No code found between tags"
         return results
-
-    # Create temporary directory for CodeQL analysis
-    with tempfile.TemporaryDirectory() as temp_dir:
-        temp_dir_path = Path(temp_dir)
-        code_file = temp_dir_path / "code_to_analyze.py"
-        
-        # Write code to temporary file
-        with open(code_file, 'w') as f:
-            f.write(code)
-
-        try:
-            # Initialize CodeQL database
-            print("\nInitializing CodeQL database...")
-            subprocess.run([
-                'codeql', 'database', 'create',
-                f'{temp_dir_path}/codeql-db',
-                '--language=python',
-                f'--source-root={temp_dir_path}'
-            ], check=True)
-
-            # Run CodeQL analysis with custom query
-            print("\nRunning CodeQL analysis with custom query...")
-            analysis_output = subprocess.run([
-                'codeql', 'database', 'analyze',
-                f'{temp_dir_path}/codeql-db',
-                '--format=sarif-latest',
-                '--output=results.sarif',
-                'my_custom.ql'
-            ], capture_output=True, text=True, check=True)
-
-            # Read and parse SARIF results
-            if Path('results.sarif').exists():
-                with open('results.sarif', 'r') as f:
-                    sarif_content = json.load(f)
-                    results["security_analysis"] = sarif_content
-                # Clean up SARIF file
-                os.remove('results.sarif')
-            
-        except subprocess.CalledProcessError as e:
-            print(f"\nCodeQL analysis error: {str(e)}")
-            results["security_analysis"] = {
-                "error": str(e),
-                "stdout": e.stdout if hasattr(e, 'stdout') else None,
-                "stderr": e.stderr if hasattr(e, 'stderr') else None
-            }
-        except Exception as e:
-            print(f"\nError in security analysis: {str(e)}")
-            results["security_analysis"] = {"error": str(e)}
-
     # Continue with database testing
     print("\nSetting up test database...")
     db_fd, db_path = setup_test_db()
